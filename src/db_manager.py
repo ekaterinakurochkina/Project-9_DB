@@ -41,7 +41,6 @@ class DBManager():
     def get_vacancies_with_keyword(self, word):
         """получает список всех вакансий, в названии которых содержатся
         переданные в метод слова, например, python"""
-        q = """SELECT * FROM vacancies
-                                    WHERE LOWER(vacancy_name) LIKE %s"""
+        q = """SELECT * FROM vacancies WHERE LOWER(vacancy_name) LIKE %s"""
         self.cur.execute(q, ('%' + word.lower() + '%',))
         return self.cur.fetchall()
