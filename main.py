@@ -2,28 +2,37 @@ import requests
 import psycopg2
 from src.db_manager import DBManager
 # from src.utils import
-from config import CONN
+from src.utils import create_database, insert_data_to_database
+from src.db_manager import DBManager
+from src.api_access import ApiWork
 
-try:
-    with CONN:
-        with CONN.cursor() as cur:
-            # работа с базой данных, вызовы команд в бд через курсор
-            pass
+from config import config
 
-finally:
-    CONN.close()
+
+params = config()
+
 
 def user_interaction():
     """Функция для взаимодействия с пользователем"""
 
-    search_vacancy = input("Введите название вакансии для поиска: ")
-    pages = int(input("Введите количество страниц с вакансиями для загрузки с сайта hh.ru: "))
-    per_page = int(input("Введите количество вакансий на странице (не более 100): "))
+    print("Привет!")
+    print("Предлагаем ознакомиться с вакансиями, представленными на сайте hh.ru")
+    print("Пожалуйста, выберите, какую информацию о десяти работодателях их вакансиях Вы хотите узнать:")
+    print("1. Список компаний и количество вакансий у каждой компании")
+    print("2. Список вакансий с указанием названия компании, зарплаты и ссылки на вакансию")
+    print("3. Средняя зарплата по вакансиям")
+    print("4. Список вакансий, у которых зарплата выше средней по всем вакансиям")
+    print("5. Список всех вакансий, в названии которых содержится ключевое слово")
+    print("6. Завершить работу программы")
+    user_choice = input("Ваш выбор: ")
+    data =
 
+    # search_vacancy = input("Введите название вакансии для поиска: ")
+    # pages = int(input("Введите количество страниц с вакансиями для загрузки с сайта hh.ru: "))
+    # per_page = int(input("Введите количество вакансий на странице (не более 100): "))
 
 # Создание экземпляра класса для работы с API сайта hh.ru
     hh_api = ApiWork()
-
 
 #Получение вакансий с hh.ru в формате json и преобразование внутри метода в python-список словарей
     response = hh_api.get_response(search_vacancy, per_page)

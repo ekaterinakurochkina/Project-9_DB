@@ -1,5 +1,9 @@
 import requests
 from abc import ABC, abstractmethod
+import os
+
+# api_key = os.getenv("API_KEY")
+
 
 class ApiAccess(ABC):
     """Абстрактный класс для работы с вакансиями по API"""
@@ -12,6 +16,7 @@ class ApiAccess(ABC):
     def get_vacancies(self, keyword: str, per_page: int):
         pass
 
+
 class ApiWork(ApiAccess):
     """Класс для получения вакансий через API"""
 
@@ -21,7 +26,7 @@ class ApiWork(ApiAccess):
         self.__params = {
             "text": "",
             "page": 0,
-            "per_page": 10,
+            "per_page": 100,
             "only_whith_salary": True,
         }
         self.__vacancies = []
@@ -69,3 +74,10 @@ class ApiWork(ApiAccess):
             # Обрабатываем ошибку при получении вакансий
             print(f"Ошибка API-запроса при получении вакансий: {e}")
             return []
+# _______________
+
+def get_hh_data(employer_ids):
+    employer_ids = [4219, 78638, 198614, 774144, 5667343, 5919632, 6062708, 9301808, 9694561, 10571093]
+    data = []
+    for employer in employer_ids:
+        employer_data =
