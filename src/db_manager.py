@@ -15,7 +15,7 @@ class DBManager:
 
     def execute_query(self, query):
         """Подключаемся к базе данных"""
-        conn = psycopg2.connect(database_name='postgres', user=os.getenv("user"), password=os.getenv("password"),
+        conn = psycopg2.connect(dbname=self._database_name, user=os.getenv("user"), password=os.getenv("password"),
                                 host=os.getenv("host"), port=os.getenv("port"))
         with conn:
             with conn.cursor() as cur:
@@ -26,30 +26,36 @@ class DBManager:
 
     def get_companies_and_vacancies_count(self):
         """получаем список всех компаний и количество вакансий у каждой компании"""
-        query = ("SELECT employer.id, employer.name, COUNT(vacancy.id) AS vacancy_count "
-                 "FROM employer "
-                 "LEFT JOIN vacancy ON employer.id = vacancy.employer_id "
-                 "GROUP BY employer.id, employer.name "
-                 "ORDER BY employer.name")
+        query = ("SELECT employers.id, employers.name, COUNT(vacancies.id) AS vacancy_count "
+                 "FROM employers "
+                 "LEFT JOIN vacancies ON employer.id = vacancyes.employer_id "
+                 "GROUP BY employers.id, employers.name "
+                 "ORDER BY employers.name")
         return self.execute_query(query)
+
+
+    def get_all_employers(self):
+        """получаем список всех вакансий с указанием  компании, зарплаты и ссылки на вакансию """
+        return self.execute_query("SELECT * FROM vacancies")
+
 
     def get_all_vacancies(self):
         """получаем список всех вакансий с указанием названия компании,
         названия вакансии, зарплаты и ссылки на вакансию"""
-        return self.execute_query("SELECT * FROM vacancy")
+        return self.execute_query("SELECT * FROM vacancies")
 
     def get_avg_salary(self):
         """получаем среднюю зарплату по вакансиям"""
-        return self.execute_query("SELECT AVG(salary_from) FROM vacancy")
+        return self.execute_query("SELECT AVG(salary_from) FROM vacancies")
 
     def get_vacancies_with_higher_salary(self):
         """получаем список всех вакансий, у которых зарплата выше средней
         по всем вакансиям"""
-        return self.execute_query("SELECT name, salary_from, url FROM vacancy "
-                                    "WHERE salary_from > (SELECT AVG(salary_from) FROM vacancy)")
+        return self.execute_query("SELECT name, salary_from, url FROM vacancies "
+                                    "WHERE salary_from > (SELECT AVG(salary_from) FROM vacancies)")
 
     def get_vacancies_with_keyword(self, keyword):
         """получаем список всех вакансий, в названии которых содержатся
         переданные в метод слова, например, python"""
-        query = f"SELECT * FROM vacancy WHERE name LIKE '%{keyword}%'"
+        query = f"SELECT * FROM vacancies WHERE name LIKE '%{keyword}%'"
         return self.execute_query(query)
