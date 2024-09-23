@@ -10,42 +10,46 @@ load_dotenv()
 class DBManager:
     """Класс для работы с базой данных PostgreSQL"""
 
-    def __init__(self, params):
-        self.conn = psycopg2.connect(dbname="db_hh", **params)
-        self.cur = self.conn.cursor()
+    def __init__(self, database_name):
+        self._database_name = database_name
+
+    def execute_query(self, query):
+        """Подключаемся к базе данных"""
+        conn = psycopg2.connect(database_name='postgres', user=os.getenv("user"), password=os.getenv("password"),
+                                host=os.getenv("host"), port=os.getenv("port"))
+        with conn:
+            with conn.cursor() as cur:
+                cur.execute(query)
+                result = cur.fetchall()
+        conn.close()
+        return result
 
     def get_companies_and_vacancies_count(self):
-        """получает список всех компаний и количество вакансий у каждой компании"""
-        self.cur.execute(f"SELECT company_name, open_vacancies FROM employers")
-        return self.cur.fetchall()
+        """получаем список всех компаний и количество вакансий у каждой компании"""
+        query = ("SELECT employer.id, employer.name, COUNT(vacancy.id) AS vacancy_count "
+                 "FROM employer "
+                 "LEFT JOIN vacancy ON employer.id = vacancy.employer_id "
+                 "GROUP BY employer.id, employer.name "
+                 "ORDER BY employer.name")
+        return self.execute_query(query)
 
     def get_all_vacancies(self):
-        """получает список всех вакансий с указанием названия компании,
+        """получаем список всех вакансий с указанием названия компании,
         названия вакансии, зарплаты и ссылки на вакансию"""
-        self.cur.execute(
-            f"SELECT employers.company_name, vacancies.vacancy_name, vacancies.salary_from, vacancies.vacancy_url FROM vacancies "
-            f"JOIN employers USING(employer_id)"
-        )
-        return self.cur.fetchall()
+        return self.execute_query("SELECT * FROM vacancy")
 
     def get_avg_salary(self):
-        """получает среднюю зарплату по вакансиям"""
-        self.cur.execute(f"SELECT AVG(salary_from) FROM vacancies")
-        return self.cur.fetchall()
+        """получаем среднюю зарплату по вакансиям"""
+        return self.execute_query("SELECT AVG(salary_from) FROM vacancy")
 
     def get_vacancies_with_higher_salary(self):
-        """получает список всех вакансий, у которых зарплата выше средней
+        """получаем список всех вакансий, у которых зарплата выше средней
         по всем вакансиям"""
-        self.cur.execute(
-            f"SELECT vacancy_name, salary_from FROM vacancies "
-            f"GROUP BY vacancy_name, salary_from HAVING salary_from > (select avg(salary_from) FROM vacancies)"
-            f"ORDER BY salary_from"
-        )
-        return self.cur.fetchall()
+        return self.execute_query("SELECT name, salary_from, url FROM vacancy "
+                                    "WHERE salary_from > (SELECT AVG(salary_from) FROM vacancy)")
 
-    def get_vacancies_with_keyword(self, word):
-        """получает список всех вакансий, в названии которых содержатся
+    def get_vacancies_with_keyword(self, keyword):
+        """получаем список всех вакансий, в названии которых содержатся
         переданные в метод слова, например, python"""
-        q = """SELECT * FROM vacancies WHERE LOWER(vacancy_name) LIKE %s"""
-        self.cur.execute(q, ("%" + word.lower() + "%",))
-        return self.cur.fetchall()
+        query = f"SELECT * FROM vacancy WHERE name LIKE '%{keyword}%'"
+        return self.execute_query(query)
