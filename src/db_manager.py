@@ -26,33 +26,34 @@ class DBManager:
 
     def get_companies_and_vacancies_count(self):
         """получаем список всех компаний и количество вакансий у каждой компании"""
-        query = ("SELECT employers.id, employers.name, COUNT(vacancies.id) AS vacancy_count "
+        query = ("SELECT employers.id, employers.name, employers.all_vacancies "
                  "FROM employers "
-                 "LEFT JOIN vacancies ON employer.id = vacancyes.employer_id "
+                 "LEFT JOIN vacancies ON employers.id = vacancies.employer_id "
                  "GROUP BY employers.id, employers.name "
-                 "ORDER BY employers.name")
+                 "ORDER BY employers.name "
+                 "LIMIT 10")
         return self.execute_query(query)
 
 
     def get_all_employers(self):
         """получаем список всех вакансий с указанием  компании, зарплаты и ссылки на вакансию """
-        return self.execute_query("SELECT * FROM vacancies")
+        return self.execute_query("SELECT * FROM vacancies LIMIT 10")
 
 
     def get_all_vacancies(self):
         """получаем список всех вакансий с указанием названия компании,
         названия вакансии, зарплаты и ссылки на вакансию"""
-        return self.execute_query("SELECT * FROM vacancies")
+        return self.execute_query("SELECT * FROM vacancies LIMIT 10")
 
     def get_avg_salary(self):
         """получаем среднюю зарплату по вакансиям"""
-        return self.execute_query("SELECT AVG(salary_from) FROM vacancies")
+        return self.execute_query("SELECT AVG(salary_from) FROM vacancies LIMIT 10")
 
     def get_vacancies_with_higher_salary(self):
         """получаем список всех вакансий, у которых зарплата выше средней
         по всем вакансиям"""
         return self.execute_query("SELECT name, salary_from, url FROM vacancies "
-                                    "WHERE salary_from > (SELECT AVG(salary_from) FROM vacancies)")
+                                    "WHERE salary_from > (SELECT AVG(salary_from) FROM vacancies) LIMIT 10")
 
     def get_vacancies_with_keyword(self, keyword):
         """получаем список всех вакансий, в названии которых содержатся
